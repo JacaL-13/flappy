@@ -41,8 +41,6 @@ function PlayState:update(dt)
     if paused == false then
         self.timer = self.timer + dt
 
-        pipeFrequency = math.random(PIPE_FREQ_FAST, PIPE_FREQ_SLOW)
-
         -- spawn a new pipe pair when timer reaches pipeFrequency
         if self.timer > self.pipeFrequency then
 
