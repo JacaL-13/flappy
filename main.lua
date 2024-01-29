@@ -12,9 +12,7 @@
     for years prior. Illustrates some of the most basic procedural generation of game
     levels possible as by having pipes stick out of the ground by varying amounts, acting
     as an infinitely generated obstacle course for the player.
-]]
-
--- push is a library that will allow us to draw our game at a virtual
+]] -- push is a library that will allow us to draw our game at a virtual
 -- resolution, instead of however large our window is; used to provide
 -- a more retro aesthetic
 --
@@ -51,6 +49,8 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 512
 VIRTUAL_HEIGHT = 288
 
+paused = false
+
 local background = love.graphics.newImage('background.png')
 local backgroundScroll = 0
 
@@ -85,6 +85,8 @@ function love.load()
         ['explosion'] = love.audio.newSource('explosion.wav', 'static'),
         ['hurt'] = love.audio.newSource('hurt.wav', 'static'),
         ['score'] = love.audio.newSource('score.wav', 'static'),
+		['pause'] = love.audio.newSource('pause.wav', 'static'),
+		['unpause'] = love.audio.newSource('unpause.wav', 'static'),
 
         -- https://freesound.org/people/xsgianni/sounds/388079/
         ['music'] = love.audio.newSource('marios_way.mp3', 'static')
@@ -103,10 +105,18 @@ function love.load()
 
     -- initialize state machine with all state-returning functions
     gStateMachine = StateMachine {
-        ['title'] = function() return TitleScreenState() end,
-        ['countdown'] = function() return CountdownState() end,
-        ['play'] = function() return PlayState() end,
-        ['score'] = function() return ScoreState() end
+        ['title'] = function()
+            return TitleScreenState()
+        end,
+        ['countdown'] = function()
+            return CountdownState()
+        end,
+        ['play'] = function()
+            return PlayState()
+        end,
+        ['score'] = function()
+            return ScoreState()
+        end
     }
     gStateMachine:change('title')
 
@@ -155,9 +165,11 @@ end
 
 function love.update(dt)
     -- scroll our background and ground, looping back to 0 after a certain amount
-    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
-    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
-
+    if scrolling and not paused then
+        backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+        groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+    end
+	
     gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
